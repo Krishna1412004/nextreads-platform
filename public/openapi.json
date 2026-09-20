@@ -1,0 +1,275 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "E-Bookstore Platform API",
+    "description": "Comprehensive OpenAPI 3.0 specification for the E-Bookstore platform with catalogue browsing, shopping cart, loyalty points redemption, and payment processing.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "E-Bookstore Engineering Team",
+      "email": "support@ebookstore.local"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3000/api",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/books": {
+      "get": {
+        "summary": "Get books with filters",
+        "description": "Retrieve list of books filtered by category, brand, search query, or featured status.",
+        "parameters": [
+          { "name": "category", "in": "query", "schema": { "type": "string" }, "description": "Category Slug or ID" },
+          { "name": "brand", "in": "query", "schema": { "type": "string" }, "description": "Brand / Publisher Slug or ID" },
+          { "name": "q", "in": "query", "schema": { "type": "string" }, "description": "Search keyword for title/author" },
+          { "name": "featured", "in": "query", "schema": { "type": "boolean" }, "description": "Filter featured books" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of books retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Book" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/books/{id}": {
+      "get": {
+        "summary": "Get book details by ID or Slug",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Book details with related books",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "book": { "$ref": "#/components/schemas/Book" },
+                    "relatedBooks": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Book" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Book not found" }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "summary": "List all product categories",
+        "responses": {
+          "200": {
+            "description": "List of categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Category" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/brands": {
+      "get": {
+        "summary": "List all book brands/publishers",
+        "responses": {
+          "200": {
+            "description": "List of publishers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Brand" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "summary": "Get user order history with 'Buy It Again' metadata",
+        "responses": {
+          "200": {
+            "description": "List of historical orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Order" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Commit purchase and process payment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CheckoutRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order successfully created and paid",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OrderConfirmation" }
+              }
+            }
+          },
+          "400": { "description": "Validation error or insufficient points" }
+        }
+      }
+    },
+    "/user/points": {
+      "get": {
+        "summary": "Get current user gift points balance",
+        "responses": {
+          "200": {
+            "description": "Gift points summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "points": { "type": "integer", "example": 250 },
+                    "dollarValue": { "type": "number", "example": 25.0 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "Brand": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "logoUrl": { "type": "string" }
+        }
+      },
+      "Book": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "slug": { "type": "string" },
+          "author": { "type": "string" },
+          "isbn": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number" },
+          "discountPercent": { "type": "integer" },
+          "coverImage": { "type": "string" },
+          "rating": { "type": "number" },
+          "reviewCount": { "type": "integer" },
+          "format": { "type": "string" },
+          "featured": { "type": "boolean" },
+          "categoryId": { "type": "string" },
+          "brandId": { "type": "string" }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "bookId": { "type": "string" },
+          "quantity": { "type": "integer" },
+          "unitPrice": { "type": "number" },
+          "totalPrice": { "type": "number" },
+          "book": { "$ref": "#/components/schemas/Book" }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "orderNumber": { "type": "string" },
+          "subtotal": { "type": "number" },
+          "discount": { "type": "number" },
+          "pointsRedeemed": { "type": "integer" },
+          "pointsDiscount": { "type": "number" },
+          "totalAmount": { "type": "number" },
+          "paymentMethod": { "type": "string" },
+          "status": { "type": "string" },
+          "createdAt": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderItem" }
+          }
+        }
+      },
+      "CheckoutRequest": {
+        "type": "object",
+        "required": ["items", "addressId", "paymentMethod"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["bookId", "quantity"],
+              "properties": {
+                "bookId": { "type": "string" },
+                "quantity": { "type": "integer", "minimum": 1 }
+              }
+            }
+          },
+          "addressId": { "type": "string" },
+          "pointsRedeemed": { "type": "integer", "default": 0 },
+          "paymentMethod": {
+            "type": "string",
+            "enum": ["CREDIT_CARD", "DEBIT_CARD", "UPI", "NET_BANKING", "GIFT_POINTS"]
+          },
+          "paymentDetails": { "type": "object" }
+        }
+      },
+      "OrderConfirmation": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" },
+          "order": { "$ref": "#/components/schemas/Order" },
+          "remainingPoints": { "type": "integer" }
+        }
+      }
+    }
+  }
+}
