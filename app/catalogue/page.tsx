@@ -5,8 +5,9 @@ import { mockBooks, mockCategories, mockBrands } from '@/lib/mock-data';
 import BookCard from '@/components/BookCard';
 import { Search, Filter, BookOpen } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function CataloguePage() {
+function CatalogueContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category') || 'ALL';
 
@@ -172,5 +173,28 @@ export default function CataloguePage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function CataloguePage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-8 animate-pulse">
+        <div className="h-36 bg-white dark:bg-[#161b22] rounded-2xl border border-slate-200 dark:border-[#30363d]" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="space-y-4">
+            <div className="h-64 bg-white dark:bg-[#161b22] rounded-2xl border border-slate-200 dark:border-[#30363d]" />
+            <div className="h-48 bg-white dark:bg-[#161b22] rounded-2xl border border-slate-200 dark:border-[#30363d]" />
+          </div>
+          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-64 bg-white dark:bg-[#161b22] rounded-xl border border-slate-200 dark:border-[#30363d]" />
+            ))}
+          </div>
+        </div>
+      </div>
+    }>
+      <CatalogueContent />
+    </Suspense>
   );
 }
