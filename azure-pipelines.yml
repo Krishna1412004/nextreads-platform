@@ -1,0 +1,29 @@
+trigger:
+  -main
+
+pool:
+ vmImage: ubuntu-latest
+
+steps:
+  -checkout: self
+
+  -task: NodeTool@0
+  displayName: 'Set up Node.js'
+  inputs:
+    versionSpec: '20.x'
+
+  -script: npm ci
+  displayName: 'Install Dependencies'
+
+  -script: npx prisma generate
+  displayName: 'Generate Prisma Client'
+
+  -script: npm test
+  displayName: 'Run unit test'
+
+  -script: npm run lint
+  displayName: 'run lint checks'
+
+  -script: npm run build
+  displayName: 'Build Next.js application'
+
